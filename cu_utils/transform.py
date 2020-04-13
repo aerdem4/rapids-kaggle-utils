@@ -73,3 +73,15 @@ def get_cu_rolling_max_transform(window, null_val=-1):
             else:
                 y_out[i] = null_val
     return cu_rolling_max_transform
+
+
+def get_cu_rolling_min_transform(window, null_val=-1):
+    def cu_rolling_min_transform(x, y_out):
+        for i in range(cuda.threadIdx.x, len(x), cuda.blockDim.x):
+            y_out[i] = math.inf
+            if i >= window-1:
+                for j in range(cuda.threadIdx.y, window, cuda.blockDim.y):
+                    cuda.atomic.min(y_out, i, x[i-j])
+            else:
+                y_out[i] = null_val
+    return cu_rolling_min_transform
